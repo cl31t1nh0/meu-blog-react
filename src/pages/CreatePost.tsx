@@ -1,54 +1,47 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Post } from "../data/posts";
+import { useState } from 'react';
+import { createPost } from '../services/postsService';
+import { useNavigate } from 'react-router-dom';
 
-interface CreatePostProps {
-  onAddPost: (post: Post) => void;
-}
-
-const CreatePost = ({ onAddPost }: CreatePostProps) => {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+const CreatePost = () => {
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const newPost: Post = {
-      id: String(Date.now()),
-      title,
-      content,
-    };
-
-    onAddPost(newPost);
-    navigate("/");
+    setLoading(true);
+    try {
+      await createPost(title, content);
+      navigate('/');
+    } catch (error) {
+      alert('Erro ao criar post');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div>
-      <h1>New Post</h1>
+    <div className="container">
+      <h1>✍️ Criar Novo Post</h1>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>Title:</label><br />
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-            style={{ width: "100%", padding: "0.5rem" }}
-          />
-        </div>
-        <div style={{ marginTop: "1rem" }}>
-          <label>Content:</label><br />
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            required
-            style={{ width: "100%", height: "150px", padding: "0.5rem" }}
-          />
-        </div>
-        <button type="submit" style={{ marginTop: "1rem" }}>
-          Create Post
+        <input
+          type="text"
+          placeholder="Título"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
+        <textarea
+          placeholder="Conteúdo do post..."
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          rows={10}
+          required
+        />
+        <button type="submit" disabled={loading}>
+          {loading ? 'Publicando...' : 'Publicar'}
         </button>
       </form>
     </div>
